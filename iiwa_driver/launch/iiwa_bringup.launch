@@ -25,10 +25,10 @@
 <launch>
   <!-- Select the robot -->
   <arg name="robot_name" default="iiwa"/>
-  <arg name="model" default="14" />
+  <arg name="model" default="7" />
 
   <!-- Select the controller -->
-  <arg name="controller" default="TorqueController"/>
+  <arg name="controller" default="PositionJointTrajectoryController"/>
 
   <!-- Setup iiwa -->
   <include file="$(find iiwa_driver)/launch/iiwa_setup.launch">
@@ -39,8 +39,9 @@
 
   <!-- Spawn iiwa FRI driver -->
   <node pkg="iiwa_driver" type="iiwa_driver" name="iiwa_driver" respawn="false" output="screen">
-    <remap from="/joint_states" to="/iiwa/joint_states"/>
+    <remap from="/joint_states" to="/iiwa/joint_hw_states"/>
     <remap from="/controller_manager" to="/iiwa/controller_manager"/>
+    <remap from="/robot_description" to="/iiwa/robot_description"/>
     <!-- Load configurations from YAML file to parameter server -->
     <rosparam file="$(find iiwa_driver)/config/iiwa.yaml" command="load"/>
   </node>

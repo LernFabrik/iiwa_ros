@@ -51,6 +51,18 @@ iiwa:
       - iiwa_joint_5
       - iiwa_joint_6
       - iiwa_joint_7
+  
+  #To interface Moveit Follow Joint Trajectory
+  PositionJointTrajectoryController:
+    type: position_controllers/JointTrajectoryController
+    joints:
+      - iiwa_joint_1
+      - iiwa_joint_2
+      - iiwa_joint_3
+      - iiwa_joint_4
+      - iiwa_joint_5
+      - iiwa_joint_6
+      - iiwa_joint_7
 
   # Custom Controllers ------------------------------------------------
   # The space variable can be either set to "task" or "joint"

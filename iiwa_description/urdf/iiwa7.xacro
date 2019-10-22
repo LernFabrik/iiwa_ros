@@ -64,7 +64,7 @@
   <xacro:property name="max_velocity_6" value="${PI}"/>
   <xacro:property name="max_velocity_7" value="${PI}"/>
 
-  <xacro:macro name="iiwa7" params="parent hardware_interface robot_name collision_postfix *origin">
+  <xacro:macro name="iiwa7" params="parent hardware_interface robot_name *origin">
 
     <!--joint between {parent} and link_0-->
     <joint name="${parent}_${robot_name}_joint" type="fixed">

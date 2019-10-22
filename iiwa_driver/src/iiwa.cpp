@@ -295,7 +295,6 @@ namespace iiwa_ros {
     {
         if (_fri_connection.isOpen()) {
             // TO-DO: Use ROS output
-            // printf("Warning: client application already connected!\n");
             return true;
         }
 
