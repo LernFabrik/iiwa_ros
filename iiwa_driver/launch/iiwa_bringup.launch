@@ -39,7 +39,7 @@
 
   <!-- Spawn iiwa FRI driver -->
   <node pkg="iiwa_driver" type="iiwa_driver" name="iiwa_driver" respawn="false" output="screen">
-    <remap from="/joint_states" to="/iiwa/joint_hw_states"/>
+    <remap from="/joint_states" to="/iiwa/joint_states"/>
     <remap from="/controller_manager" to="/iiwa/controller_manager"/>
     <remap from="/robot_description" to="/iiwa/robot_description"/>
     <!-- Load configurations from YAML file to parameter server -->
