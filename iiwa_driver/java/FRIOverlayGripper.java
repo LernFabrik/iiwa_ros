@@ -1,8 +1,12 @@
 package application;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.kuka.basictoolbox.container.IProvider;
+import com.kuka.basictoolbox.gripper.IHandlingGripper;
+import com.kuka.common.ThreadUtil;
 import com.kuka.connectivity.fastRobotInterface.ClientCommandMode;
 import com.kuka.connectivity.fastRobotInterface.FRIConfiguration;
 import com.kuka.connectivity.fastRobotInterface.FRIJointOverlay;
@@ -10,10 +14,23 @@ import com.kuka.connectivity.fastRobotInterface.FRISession;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.controllerModel.Controller;
 import com.kuka.roboticsAPI.deviceModel.LBR;
+import com.kuka.roboticsAPI.geometricModel.LoadData;
 import com.kuka.roboticsAPI.geometricModel.Tool;
+import com.kuka.roboticsAPI.geometricModel.Workpiece;
 import com.kuka.roboticsAPI.motionModel.PositionHold;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.JointImpedanceControlMode;
+import com.kuka.roboticsAPI.motionModel.controlModeModel.PositionControlMode;
 import com.kuka.roboticsAPI.uiModel.ApplicationDialogType;
+// Collaborative mode
+import com.kuka.collisiondetection.abstractCollisionCondition.ICollisionCondition;
+import com.kuka.collisiondetection.abstractInterruptBehavior.IInterruptBehavior;
+import com.kuka.collisiondetection.abstractResumeBehavior.IResumeBehavior;
+import com.kuka.collisiondetection.collisionhandler.CollisionHandler;
+import com.kuka.roboticsAPI.conditionModel.ConditionObserver;
+import com.kuka.roboticsAPI.conditionModel.ForceCondition;
+import com.kuka.roboticsAPI.conditionModel.IAnyEdgeListener;
+import com.kuka.roboticsAPI.conditionModel.ICondition;
+import com.kuka.roboticsAPI.conditionModel.NotificationType;
 
 /**
  * Moves the LBR in a start position, creates an FRI-Session and executes a
@@ -26,7 +43,27 @@ public class FRIOverlayGripper extends RoboticsAPIApplication
     private LBR _lbr;
     private String _clientName;
     private Tool _toolAttached;
-
+    private IHandlingGripper _gripper;
+    private Workpiece _workPiece = null;
+    /*private LoadData _loadData;
+    
+    
+    // Tool Data
+    private static final String TOOL_NAME = "MyVirtualGripper";
+    private static final double[] TRANSLATION_OF_TOOL = { 0, 0, 100};
+    private static final double MASS = 0;
+    private static final double[] CENTER_OF_MASS_IN_MILLIMETER = {0, 0, 100};*/
+    
+    // Collaborative mode
+    private ICollisionCondition collisionCondition;
+    private ICondition iCondition;
+    private ConditionObserver conObserver;
+    private IInterruptBehavior iInterruptBehavior;
+    private IResumeBehavior iResumeBehavior;
+    public boolean collision = true;
+    private CollisionHandler collisionHandler;
+    public double threshold = 30;
+    
     @Override
     public void initialize()
     {
@@ -36,9 +73,38 @@ public class FRIOverlayGripper extends RoboticsAPIApplication
         // *** change next line to the FRIClient's IP address                 ***
         // **********************************************************************
         _clientName = "192.170.10.1";
-
+        //_clientName = "172.31.1.140";
+        //_workPiece.setName("universal_product");
         // attach a gripper
-        _toolAttached = getApplicationData().createFromTemplate("MyVirtualGripper");
+        
+        // Collaborative mode
+        iCondition = ForceCondition.createSpatialForceCondition(_lbr.getFlange(), threshold);
+        conObserver = getObserverManager().createAndEnableConditionObserver(iCondition, NotificationType.OnEnable, new IAnyEdgeListener() {
+			
+			@Override
+			public void onAnyEdge(ConditionObserver conditionObserver, Date time,
+					int missedEvents, boolean conditionValue) {
+				if(conditionValue){
+					if(collision){
+						getLogger().info("Collison State");
+						getApplicationControl().setApplicationOverride(0.0d);
+						ThreadUtil.milliSleep(500);
+					}else{
+						getApplicationControl().setApplicationOverride(0.25d);
+						getLogger().info("Resuming the motion");
+					}
+				}else{
+					getLogger().info("No Collision is detected -> !I AM IN HAPPY STATE!");
+					getApplicationControl().setApplicationOverride(0.25d);
+				}
+				
+			}
+		});
+        
+        _workPiece = getApplicationData().createFromTemplate("universal_product");
+        _workPiece.attachTo(_lbr.getFlange());
+        _lbr.setSafetyWorkpiece(_workPiece);
+        _toolAttached = getApplicationData().createFromTemplate("SchunkW");
         _toolAttached.attachTo(_lbr.getFlange());
     }
 
@@ -70,65 +136,24 @@ public class FRIOverlayGripper extends RoboticsAPIApplication
         }
 
         getLogger().info("FRI connection established.");
-
-        int modeChoice = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, "Choose control mode", "Torque", "Position", "Wrench");
-
-        ClientCommandMode mode = ClientCommandMode.TORQUE;
-        if (modeChoice == 0) {
-            getLogger().info("Torque control mode chosen");
-            mode = ClientCommandMode.TORQUE;
-        }
-        else if (modeChoice == 1) {
-            getLogger().info("Position control mode chosen");
-            mode = ClientCommandMode.POSITION;
-        }
-        else if (modeChoice == 2) {
-            getLogger().warn("Wrench control mode not supported yet. Using position control mode instead");
-            mode = ClientCommandMode.POSITION;
-        }
-        else {
-            getLogger().warn("Invalid choice: using position control mode");
-            mode = ClientCommandMode.POSITION;
-        }
+        
+        ClientCommandMode mode = ClientCommandMode.POSITION;
+        
         FRIJointOverlay jointOverlay = new FRIJointOverlay(friSession, mode);
-
-        int choice = getApplicationUI().displayModalDialog(ApplicationDialogType.QUESTION, "Choose stiffness for actuators", "0", "20", "50", "150", "300", "500");
-
-        double stiffness = 0.;
-        if (choice == 0) {
-            getLogger().info("Stiffness of '0' chosen");
-            stiffness = 0.;
-        }
-        else if (choice == 1) {
-            getLogger().info("Stiffness of '20' chosen");
-            stiffness = 20.;
-        }
-        else if (choice == 2) {
-            getLogger().info("Stiffness of '50' chosen");
-            stiffness = 50.;
-        }
-        else if (choice == 3) {
-            getLogger().info("Stiffness of '150' chosen");
-            stiffness = 150.;
-        }
-        else if (choice == 4) {
-            getLogger().info("Stiffness of '300' chosen");
-            stiffness = 300.;
-        }
-        else if (choice == 5) {
-            getLogger().info("Stiffness of '500' chosen");
-            stiffness = 500.;
-        }
-        else {
-            getLogger().warn("Invalid choice: setting stiffness to '20'");
-            stiffness = 20.;
-        }
-
+        
+        double stiffness = 500.;
+        
         // start PositionHold with overlay
         JointImpedanceControlMode ctrMode = new JointImpedanceControlMode(stiffness, stiffness, stiffness, stiffness, stiffness, stiffness, stiffness);
+        PositionControlMode posMode = new PositionControlMode();
         if (mode == ClientCommandMode.TORQUE)
-            ctrMode.setDampingForAllJoints(0.);
+        	ctrMode.setDampingForAllJoints(0.);
+        
         PositionHold posHold = new PositionHold(ctrMode, -1, TimeUnit.SECONDS);
+        
+        // PositionHold posHold = new PositionHold(posMode, -1, TimeUnit.SECONDS);
+        
+        getLogger().info("ROS enabled motion is started");
 
         _toolAttached.move(posHold.addMotionOverlay(jointOverlay));
 
@@ -138,7 +163,7 @@ public class FRIOverlayGripper extends RoboticsAPIApplication
 
     /**
      * main.
-     *
+     * 
      * @param args
      *            args
      */
