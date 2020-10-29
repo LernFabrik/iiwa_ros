@@ -24,29 +24,21 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<launch>
+  <!-- See moveit_ros/visualization/doc/joystick.rst for documentation -->
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+  <arg name="dev" default="/dev/input/js0" />
 
+  <group ns="iiwa" >
+    <!-- Launch joy node -->
+    <node pkg="joy" type="joy_node" name="joy">
+      <param name="dev" value="$(arg dev)" /> <!-- Customize this to match the location your joystick is plugged in on-->
+      <param name="deadzone" value="0.2" />
+      <param name="autorepeat_rate" value="40" />
+      <param name="coalesce_interval" value="0.025" />
+    </node>
 
-  <license>GPLv3</license>
-
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
-
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+    <!-- Launch python interface -->
+    <node pkg="moveit_ros_visualization" type="moveit_joy.py" output="screen" name="moveit_joy"/>
+  </group>
+</launch>

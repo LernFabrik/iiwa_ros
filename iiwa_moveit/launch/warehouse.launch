@@ -24,29 +24,18 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<launch>
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+  <!-- The path to the database must be specified -->
+  <arg name="moveit_warehouse_database_path" />
 
+  <!-- Load warehouse parameters -->
+  <include file="$(find iiwa_moveit)/launch/warehouse_settings.launch.xml" />
 
-  <license>GPLv3</license>
+  <!-- Run the DB server -->
+  <node name="$(anon mongo_wrapper_ros)" cwd="ROS_HOME" type="mongo_wrapper_ros.py" pkg="warehouse_ros">
+    <param name="overwrite" value="false"/>
+    <param name="database_path" value="$(arg moveit_warehouse_database_path)" />
+  </node>
 
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
-
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+</launch>

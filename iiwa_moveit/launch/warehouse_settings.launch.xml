@@ -24,29 +24,17 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<launch>
+  <!-- Set the parameters for the warehouse and run the mongodb server. -->
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+  <!-- The default DB port for moveit (not default MongoDB port to avoid potential conflicts) -->
+  <arg name="moveit_warehouse_port" default="33829" />
 
+  <!-- The default DB host for moveit -->
+  <arg name="moveit_warehouse_host" default="localhost" />
 
-  <license>GPLv3</license>
-
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
-
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+  <!-- Set parameters for the warehouse -->
+  <param name="warehouse_port" value="$(arg moveit_warehouse_port)"/>
+  <param name="warehouse_host" value="$(arg moveit_warehouse_host)"/>
+  <param name="warehouse_exec" value="mongod" />
+</launch>

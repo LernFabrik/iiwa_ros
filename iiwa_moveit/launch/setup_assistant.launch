@@ -24,29 +24,18 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<!-- Re-launch the MoveIt Setup Assistant with this configuration package already loaded -->
+<launch>
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+  <!-- Debug Info -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
 
+  <!-- Run -->
+  <node pkg="moveit_setup_assistant" type="moveit_setup_assistant" name="moveit_setup_assistant"
+	args="--config_pkg=iiwa14_moveit"
+	launch-prefix="$(arg launch_prefix)"
+        output="screen" />
 
-  <license>GPLv3</license>
-
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
-
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+</launch>

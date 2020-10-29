@@ -24,29 +24,12 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<launch>
+    <!-- Set the param that trajectory_execution_manager needs to find the controller plugin -->
+    <arg name="hardware_interface" default="PositionJointInterface"/>
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+    <param name="moveit_controller_manager" value="moveit_fake_controller_manager/MoveItFakeControllerManager"/>
 
-
-  <license>GPLv3</license>
-
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
-
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+    <!-- The rest of the params are specific to this plugin -->
+    <rosparam file="$(find iiwa_moveit)/config/fake_controllers.yaml"/>
+</launch>

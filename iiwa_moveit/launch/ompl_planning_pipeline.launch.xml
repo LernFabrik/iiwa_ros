@@ -24,29 +24,24 @@
     GNU General Public License for more details.
 
 |-->
-<package>
-  <name>iiwa_ros</name>
-  <version>0.0.1</version>
-  <description>iiwa_ros metapackage contains packages to integrate into KUKA's IIWA robots.</description>
+<launch>
+  <!-- OMPL Plugin for MoveIt! -->
+  <arg name="planning_plugin" value="ompl_interface/OMPLPlanner" />
 
-  <maintainer email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</maintainer>
+  <!-- The request adapters (plugins) used when planning with OMPL.
+       ORDER MATTERS -->
+  <arg name="planning_adapters" value="default_planner_request_adapters/AddTimeParameterization
+				       default_planner_request_adapters/FixWorkspaceBounds
+				       default_planner_request_adapters/FixStartStateBounds
+				       default_planner_request_adapters/FixStartStateCollision
+				       default_planner_request_adapters/FixStartStatePathConstraints" />
 
+  <arg name="start_state_max_bounds_error" value="0.1" />
 
-  <license>GPLv3</license>
+  <param name="planning_plugin" value="$(arg planning_plugin)" />
+  <param name="request_adapters" value="$(arg planning_adapters)" />
+  <param name="start_state_max_bounds_error" value="$(arg start_state_max_bounds_error)" />
 
-  <url type="repository">https://github.com/costashatz/iiwa_ros</url>
-  <url type="bugtracker">https://github.com/costashatz/iiwa_ros/issues</url>
+  <rosparam command="load" file="$(find iiwa_moveit)/config/ompl_planning.yaml"/>
 
-  <author email="costashatz@gmail.com">Konstantinos Chatzilygeroudis</author>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>iiwa_description</run_depend>
-  <run_depend>iiwa_driver</run_depend>
-  <run_depend>iiwa_control</run_depend>
-  <run_depend>iiwa_gazebo</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
-</package>
+</launch>

@@ -22,26 +22,12 @@
 #|    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #|    GNU General Public License for more details.
 #|
-cmake_minimum_required(VERSION 3.1.0)
-project(iiwa_description)
+cmake_minimum_required(VERSION 3.5)
+project(iiwa_moveit)
 
 find_package(catkin REQUIRED)
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES iiwa_description
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
+catkin_package()
 
-install(DIRECTORY launch/
- DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
-
-install(DIRECTORY config/
- DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config)
-
-install(DIRECTORY meshes/
- DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes)
-
-install(DIRECTORY urdf/
- DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf)
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
